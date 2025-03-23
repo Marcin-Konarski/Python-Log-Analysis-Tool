@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  logs-collector:
+    image: logs-collector
+    volumes:
+      - ./logs-collector.py:/app/logs-collector.py ## Bind the script dynamically to enable script modifications
+    command: ["python", "/app/logs-collector.py"]
