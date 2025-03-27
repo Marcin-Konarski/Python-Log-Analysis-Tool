@@ -6,6 +6,8 @@ import datetime
 import win32evtlog ## type: ignore
 import win32con ## type: ignore
 import traceback
+import csv
+# import pandas
 
 
 ## This function converts dates with format 'Thu Jul 13 08:22:34 2017' to seconds since 1970.
@@ -92,8 +94,14 @@ def pingVM(hostname: str) -> bool:
     except:
         return False
 
+def saveToCSV(gathered_events: list[dict]):
+    with open("logs.csv", 'w') as file:
+        fieldnames = gathered_events[0].keys()
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(gathered_events)
 
-def initGathering():
+def initGathering() -> list[dict]:
     with open('vm-ip.txt', 'r') as file:
         hostname = file.read().strip()
     print(hostname)
@@ -106,14 +114,12 @@ def initGathering():
             gathered_events.extend(readEventLog(hostname, log, 10))
     else:
         print(f"[INFO:] {hostname} is down! Exiting...")
+    return gathered_events
 
-    os.makedirs("/app/output", exist_ok=True) ## this ensures that /app/output exists
-    with open("/app/output/logs.txt", 'w') as file:
-        for i, event in enumerate(gathered_events):
-            file.writelines(f'\nUnique_ID: {i}\n')
-            for k, v in event.items():
-                file.writelines(f'{k}: {v}\n')
+
+# def theNameOfPandasFunc():
 
 
 if __name__ == "__main__":
-    initGathering()
+    gathered_events = initGathering()
+    saveToCSV(gathered_events)
