@@ -1,0 +1,13 @@
+python process_logs.py logs.csv filtered.csv --sources Microsoft-Windows-Security-Auditing --event-types ERROR WARNING
+
+Filtr	Przykład użycia	Opis
+--log-types	--log-types System Application	Filtruje po typie logu (System/Security/Application)
+--sources	--sources Microsoft-Windows-Security-Auditing	Filtruje po źródle zdarzenia
+--event-types	--event-types ERROR WARNING	Filtruje po typie zdarzenia (ERROR/WARNING/INFORMATION)
+--start-time	--start-time "2025-04-20 08:00"	Zdarzenia od określonego czasu
+--end-time	--end-time "2025-04-20 18:00"	Zdarzenia do określonego czasu
+
+--last-minutes N	--last-minutes 30	Zdarzenia z ostatnich 30 minut
+--last-hours N	--last-hours 2	Zdarzenia z ostatnich 2 godzin
+--today	--today	Tylko dzisiejsze zdarzenia
+--day-of-week	--day-of-week Mon Fri	Zdarzenia od poniedziałku
