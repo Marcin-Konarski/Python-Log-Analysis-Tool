@@ -1,105 +1,28 @@
-﻿Event,Time,Event_Type,Event_ID,Source,Message
-System,2025-03-27 09:36:10,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 09:15:30,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 09:14:43,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 09:11:08,WARNING,1014,Microsoft-Windows-DNS-Client,"('signaler-pa.clients6.google.com', '128', '02000000AC140A01000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', '22764')"
-System,2025-03-27 08:41:53,WARNING,10016,DCOM,"('w³aciwe dla aplikacji', 'Lokalny', 'Aktywacja', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'CERBER', 'ccerb', 'S-1-5-21-4183552946-3221311160-120484362-1003', 'LocalHost (u¿ycie LRPC)', 'Niedostêpny', 'Niedostêpny')"
-System,2025-03-27 08:35:18,WARNING,10016,DCOM,"('w³aciwe dla aplikacji', 'Lokalny', 'Aktywacja', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'CERBER', 'ccerb', 'S-1-5-21-4183552946-3221311160-120484362-1003', 'LocalHost (u¿ycie LRPC)', 'Niedostêpny', 'Niedostêpny')"
-System,2025-03-27 08:17:30,WARNING,10016,DCOM,"('w³aciwe dla aplikacji', 'Lokalny', 'Aktywacja', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'CERBER', 'ccerb', 'S-1-5-21-4183552946-3221311160-120484362-1003', 'LocalHost (u¿ycie LRPC)', 'Niedostêpny', 'Niedostêpny')"
-System,2025-03-27 08:14:58,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:45,WARNING,-2147221454,Ntfs,"('', '\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit.scoreboard')"
-System,2025-03-27 08:13:44,WARNING,-2147221454,Ntfs,"('', '\\WZIRNIlaby\\maszyny\\ubuntu\\564d34b9-16d2-9846-3ba5-5f6acee5b048.vmem')"
-System,2025-03-27 08:13:35,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:32,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:20,WARNING,-2147221454,Ntfs,"('', '\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-linux .. revm\\564d2c72-0251-3507-ed66-2fd0ea111fc3.vmem')"
-System,2025-03-27 08:13:12,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:04,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:02,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:01,WARNING,-2147221454,Ntfs,"('', '\\Device\\HarddiskVolume8\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit-s005.vmdk')"
-System,2025-03-27 08:13:01,WARNING,-2147221454,Ntfs,"('', '\\Device\\HarddiskVolume8\\WZIRNIlaby\\maszyny\\ubuntu\\vmware.log')"
-System,2025-03-27 08:13:01,WARNING,-2147221454,Ntfs,"('', '\\Device\\HarddiskVolume8\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit-s004.vmdk')"
-System,2025-03-27 08:13:01,WARNING,-2147221454,Ntfs,"('', '\\Device\\HarddiskVolume8\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit-s003.vmdk')"
-System,2025-03-27 08:13:01,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 08:13:00,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit-s003.vmdk')"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\maszyny\\ubuntu\\vmware.log')"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-lin .. arevm\\kali-linux-2024.4-vmware-amd64-s008.vmdk')"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\maszyny\\ubuntu\\Ubuntu 64-bit-s005.vmdk')"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:13:00,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-lin .. arevm\\kali-linux-2024.4-vmware-amd64-s021.vmdk')"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-linux-2024.4-vmware-amd64.vmwarevm\\vmware.log')"
-System,2025-03-27 08:12:58,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\maszyny\\ubuntu\\vmware.log')"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:58,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,140,Microsoft-Windows-Ntfs,"('2', 'D:', '23', '\\Device\\HarddiskVolume8', '0xc000000e', '{a9b1a85c-c040-3304-e9ce-a70e8a95ba88}', '8', 'ADATA   ', '16', 'SE800           ', '4', '0   ', '0', '', '7', '0', '')"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,ERROR,-1073348594,volsnap,"('\\Device\\HarddiskVolumeShadowCopy8', 'D:', 'D:', 'c000000e', '163', '0x0005', '2176')"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\$Mft')"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\$Mft')"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\$Extend\\$UsnJrnl:$J')"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\maszyny\\ubuntu\\vmware.log')"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-lin .. arevm\\kali-linux-2024.4-vmware-amd64-s001.vmdk')"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221454,Ntfs,"('', 'D:\\WZIRNIlaby\\iso_i_tym_podobne\\kali\\kali-linux-2024.4-vmware-amd64.vmwarevm\\vmware.log')"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 08:12:55,WARNING,-2147221453,disk,"('\\Device\\Harddisk1\\DR4',)"
-System,2025-03-27 06:45:02,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-27 06:06:55,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
-System,2025-03-26 21:22:13,WARNING,-2147483648,hcmon,"('\\Device\\hcmon', '\\Driver\\USBPcap')"
+﻿Event,Time,Event_Type,Event_ID,Event_Category,Source,Message,RecordNumber
+System,2025-04-23 18:03:54,WARNING,1014,1014,Microsoft-Windows-DNS-Client,"['wpad', '128', '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', '8548']",653656
+System,2025-04-23 18:00:32,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'SAGITTARIUSA', 'Marcin', 'S-1-5-21-2317399020-1525953392-847210374-1001', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",653593
+System,2025-04-23 16:00:48,WARNING,1014,1014,Microsoft-Windows-DNS-Client,"['wpad', '128', '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', '13276']",651436
+System,2025-04-23 15:38:42,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'SAGITTARIUSA', 'Marcin', 'S-1-5-21-2317399020-1525953392-847210374-1001', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",651015
+System,2025-04-23 14:25:13,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'SAGITTARIUSA', 'Marcin', 'S-1-5-21-2317399020-1525953392-847210374-1001', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",649616
+System,2025-04-23 14:24:08,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'SAGITTARIUSA', 'Marcin', 'S-1-5-21-2317399020-1525953392-847210374-1001', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",649595
+System,2025-04-23 13:44:39,ERROR,20,1,Microsoft-Windows-WindowsUpdateClient,"['0x80073d02', '9PC1H9VN18CM-Microsoft.StartExperiencesApp', '{4df49ac9-3403-4bf9-8025-7c27c5bfcc1a}', '1', '{855e8a7c-ecb4-4ca3-b045-1dfa50104289}']",648836
+System,2025-04-23 13:44:38,ERROR,20,1,Microsoft-Windows-WindowsUpdateClient,"['0x80073d02', '9NMPJ99VJBWV-Microsoft.YourPhone', '{2eb475fe-568c-40c0-97c7-1b48d934a305}', '1', '{855e8a7c-ecb4-4ca3-b045-1dfa50104289}']",648833
+System,2025-04-23 13:23:26,ERROR,20,1,Microsoft-Windows-WindowsUpdateClient,"['0x80073d02', '9NMPJ99VJBWV-Microsoft.YourPhone', '{2eb475fe-568c-40c0-97c7-1b48d934a305}', '1', '{855e8a7c-ecb4-4ca3-b045-1dfa50104289}']",648421
+System,2025-04-23 13:22:09,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{2593F8B9-4EAF-457C-B68A-50F6B8EA6B54}', '{15C20B67-12E7-4BB6-92BB-7AFF07997402}', 'SAGITTARIUSA', 'Marcin', 'S-1-5-21-2317399020-1525953392-847210374-1001', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",648391
+System,2025-04-23 13:21:11,ERROR,20,1,Microsoft-Windows-WindowsUpdateClient,"['0x80073d02', '9PC1H9VN18CM-Microsoft.StartExperiencesApp', '{4df49ac9-3403-4bf9-8025-7c27c5bfcc1a}', '1', '{855e8a7c-ecb4-4ca3-b045-1dfa50104289}']",648370
+System,2025-04-23 13:14:16,ERROR,10010,0,DCOM,['{FD06603A-2BDF-4BB1-B7DF-5DC68F353601}'],648230
+System,2025-04-23 13:13:52,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{6B3B8D23-FA8D-40B9-8DBD-B950333E2C52}', '{4839DDB7-58C2-48F5-8283-E1D1807D0D7D}', 'NT AUTHORITY', 'LOCAL SERVICE', 'S-1-5-19', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",648213
+System,2025-04-23 13:13:52,WARNING,10016,0,DCOM,"['application-specific', 'Local', 'Activation', '{6B3B8D23-FA8D-40B9-8DBD-B950333E2C52}', '{4839DDB7-58C2-48F5-8283-E1D1807D0D7D}', 'NT AUTHORITY', 'LOCAL SERVICE', 'S-1-5-19', 'LocalHost (Using LRPC)', 'Unavailable', 'Unavailable']",648212
+System,2025-04-23 13:13:50,ERROR,10317,2,Microsoft-Windows-NDIS,"['{a77623ac-4f9d-4d8d-a1e1-87f7cec29920}', '14', '19985273135824896', 'Microsoft Wi-Fi Direct Virtual Adapter #2', '74']",648196
+Application,2025-04-23 13:16:56,WARNING,1008,0,Microsoft-Windows-Perflib,"['BITS', 'C:\\Windows\\System32\\bitsperf.dll', '1359']",25769
+Application,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['WmiApRpl', 'C:\\WINDOWS\\system32\\wbem\\wmiaprpl.dll', '21']",25731
+Application,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['MSDTC', 'C:\\WINDOWS\\system32\\msdtcuiu.DLL', '2147942402']",25730
+Application,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['ESENT', 'C:\\WINDOWS\\system32\\esentprf.dll', '5']",25729
+Application,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['BITS', 'C:\\Windows\\System32\\bitsperf.dll', '1359']",25728
+Application,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['.NETFramework', 'C:\\WINDOWS\\system32\\mscoree.dll', '5']",25727
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:16:56,WARNING,1008,0,Microsoft-Windows-Perflib,"['BITS', 'C:\\Windows\\System32\\bitsperf.dll', '1359']",25769
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['WmiApRpl', 'C:\\WINDOWS\\system32\\wbem\\wmiaprpl.dll', '21']",25731
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['MSDTC', 'C:\\WINDOWS\\system32\\msdtcuiu.DLL', '2147942402']",25730
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['ESENT', 'C:\\WINDOWS\\system32\\esentprf.dll', '5']",25729
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['BITS', 'C:\\Windows\\System32\\bitsperf.dll', '1359']",25728
+Microsoft-Windows-Sysmon/Operational,2025-04-23 13:13:54,WARNING,1008,0,Microsoft-Windows-Perflib,"['.NETFramework', 'C:\\WINDOWS\\system32\\mscoree.dll', '5']",25727
