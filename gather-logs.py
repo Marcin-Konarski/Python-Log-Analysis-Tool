@@ -209,9 +209,9 @@ def main():
     ]
     logs = WindowsEventLogGatherer(file_with_IP, log_types, log_levels)
     logs.gather_events(hours)
-    logs.save_to_csv(file_with_logs)
+    # logs.save_to_csv(file_with_logs)
 
-    # logs.save_uniqe_event_ids_and_types_to_the_file("events.txt")
+    logs.save_uniqe_event_ids_and_types_to_the_file("events.txt")
 
 if __name__ == "__main__":
     main()

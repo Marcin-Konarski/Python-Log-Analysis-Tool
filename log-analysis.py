@@ -1,9 +1,11 @@
 import csv
+import json
 import logging
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Set, Dict
+from typing import List, Dict, Any
+from datetime import datetime
 
 @dataclass
 class KnownEvent:
@@ -21,6 +23,7 @@ class LogEvent:
     source: str
     event_type: str
     date: str
+    message: str = ""
 
 class WindowsEventLogAnalyser:
     """Class used to analyze logs by comparing gathered events to known event IDs sevirty levels"""
@@ -34,7 +37,7 @@ class WindowsEventLogAnalyser:
         path = Path(csv_events_file_path)
         if not path.exists():
             raise FileNotFoundError(f"File with the specified path {csv_events_file_path} does not exist")
-        
+
         try:
             with open(path, "r", encoding="utf-8") as file:
                 reader = csv.DictReader(file)
@@ -70,6 +73,7 @@ class WindowsEventLogAnalyser:
                 required_fields = ["Event_ID", "Event", "Source", "Event_Type", "Time"]
                 if not all(field in fieldnames for field in required_fields):
                     raise ValueError(f"CSV file missing required columns. Found: {fieldnames}")
+                has_message = "message" in fieldnames if fieldnames else False
                 
                 for row in reader:
                     try:
@@ -79,7 +83,8 @@ class WindowsEventLogAnalyser:
                             log_type=row['Event'],
                             source=row['Source'],
                             event_type=row['Event_Type'],
-                            date=row['Time']
+                            date=row['Time'],
+                            message=row.get('Message', "")
                         )
                         self.log_events.append(log_event)
                     except Exception as e:
@@ -138,6 +143,57 @@ class WindowsEventLogAnalyser:
             self.logger.info(log_info)
         self.logger.info(f"Total: {len(self.log_events)} log events")
 
+    def save_to_json(self, output_file_path: str):
+        """Save analysis results to a JSON file with the specified structure"""
+        self.logger.info(f"Saving analysis results to {output_file_path}")
+
+        results: Dict[str, List[Dict[str, Any]]] = {"events": []}
+        unique_event_ids = sorted(list(self.get_unique_event_ids()))
+        
+        # Group events by event_id
+        for event_id in unique_event_ids:
+            event_data = {
+                "event_id": event_id,
+                "no_occurances": self.event_counter[event_id],
+                "specific_events": []
+            }
+            
+            # Add severity and message if available from reference events
+            reference = self.reference_events.get(event_id)
+            if reference:
+                event_data["severity"] = reference.severity
+                event_data["description"] = reference.description
+            
+            # Get all specific events with this ID
+            specific_events = [e for e in self.log_events if e.event_id == event_id]
+            
+            # Sort events by date in ascending order
+            try:
+                specific_events.sort(key=lambda e: datetime.strptime(e.date, "%Y-%m-%d %H:%M:%S"))
+            except ValueError:
+                # If date format is different, log it and continue without sorting
+                self.logger.warning(f"Could not sort events by date due to format issues")
+            
+            # Add each specific event
+            for i, event in enumerate(specific_events, 1):
+                specific_event = {
+                    "event_id": event.event_id,
+                    "event_type": event.event_type,
+                    "source": event.source,
+                    "date": event.date,
+                    "message": getattr(event, 'message', "")
+                }
+                event_data["specific_events"].append(specific_event)
+            
+            results["events"].append(event_data)
+        
+        # Write to the JSON file
+        try:
+            with open(output_file_path, 'w', encoding='utf-8') as f:
+                json.dump(results, f, indent=2)
+            self.logger.info(f"Successfully saved analysis results to {output_file_path}")
+        except Exception as e:
+            self.logger.error(f"Error saving results to JSON: {e}")
 
 def main():
     logging.basicConfig(
@@ -150,6 +206,9 @@ def main():
     analyzer.load_logs_from_csv("logs.csv")
     analyzer.count_number_of_event_occurances()
     analyzer.analyze_events_based_on_event_id()
+
+    analyzer.save_to_json("analysis_results.json")
+
 
 if __name__ == "__main__":
     main()
