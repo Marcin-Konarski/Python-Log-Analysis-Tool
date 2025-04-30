@@ -1,256 +1,318 @@
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-import pandas as pd
+import time
+import json
+import sys
+
+try:
+    import pandas as pd # type: ignore
+    import numpy as np # type: ignore
+    import dash # type: ignore
+    from dash import dcc, html # type: ignore
+    from dash.dependencies import Input, Output # type: ignore
+    import plotly.graph_objs as go # type: ignore
+except ImportError:
+    sys.exit("Error: This script requires following modules: pandas, numpy, dash and plotly. Please install with 'pip install pandas numpy dash plotly'")
 
 
-terr = pd.read_csv('modified_globalterrorismdb_0718dist.csv')
-terr.fillna(0)
+# Load JSON data
+def load_json_data(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
 
+# Convert JSON to DataFrame for easier processing
+def json_to_dataframe(json_data):
+    events_data = []
+    for event in json_data["events"]:
+        event_id = event["event_id"]
+        occurrences = event["no_occurances"]
+        severity = event.get("severity", "Unknown")
+        description = event.get("description", "")
+        
+        # Get source and type from first specific_event (if available)
+        specific_events = event.get("specific_events", [])
+        if specific_events and isinstance(specific_events, list):
+            source = specific_events[0].get("source", "Unknown")
+            event_type = specific_events[0].get("event_type", "Unknown")
+        else:
+            source = "Unknown"
+            event_type = "Unknown"
+        
+        events_data.append({
+            "event_id": event_id,
+            "occurrences": occurrences,
+            "severity": severity,
+            "description": description,
+            "source": source,
+            "type": event_type
+        })
+    
+    return pd.DataFrame(events_data)
 
-app = dash.Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}])
+# Load data
+data = load_json_data("analysis_results.json")
+df = json_to_dataframe(data)
+
+# Create Dash app
+app = dash.Dash(
+    __name__, 
+    external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'],
+    suppress_callback_exceptions=True,
+    update_title=None,
+    assets_external_path='?v=' + str(int(time.time()))
+)
+
+# Get unique values for dropdown options
+sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'All'])
+event_types = ['All'] + sorted([etype for etype in df['type'].unique() if etype != 'All'])
+
+scrollable_container_style = {
+    'height': '400px',
+    'overflow-y': 'scroll',
+    'border': 'none',
+    'border-radius': '15px',
+    'padding': '30px',
+    'margin': '25px',
+    'background-color': 'white',
+}
+
+container_style = {
+    'background-color': '#f9f9f9',
+    'border-radius': '15px',
+    'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
+    'padding': '15px 20px',
+    'margin-bottom': '15px',
+}
+
+text_style = {
+    'color': '#333333',
+}
 
 app.layout = html.Div([
+    html.H3('Windows Event Log Analysis', 
+            style={'margin-bottom': '20px', 'color': '#333333', 'text-align': 'center', 'padding-top': '10px'}),
 
+    # Filter section
     html.Div([
         html.Div([
             html.Div([
-                html.H3('Horizontal Bar Chart with Slider', style = {'margin-bottom': '0px', 'color': 'black'}),
-            ])
-        ], className = "create_container1 four columns", id = "title"),
-
-    ], id = "header", className = "row flex-display", style = {"margin-bottom": "25px"}),
-
-
-    html.Div([
-        html.Div([
-         html.P('Select Year', className = 'fix_label', style = {'color': 'black', 'margin-top': '2px'}),
-            dcc.Slider(id = 'slider_year',
-                       included = False,
-                       updatemode = 'drag',
-                       tooltip = {'always_visible': True},
-                       min = 1970,
-                       max = 2017,
-                       step = 1,
-                       value = 1970,
-                       marks = {str(yr): str(yr) for yr in range(1970, 2017, 5)},
-                       className = 'dcc_compon'),
-
-
-
-        ], className = "create_container2 four columns", style = {'margin-bottom': '20px'}),
-    ], className = "row flex-display"),
-
-
-
-    html.Div([
-        html.Div([
-            # html.P('Select Chart Type', className = 'fix_label', style = {'color': 'black'}),
-            dcc.RadioItems(id = 'radio_items',
-                           labelStyle = {"display": "inline-block"},
-                           options = [
-                                      {'label': 'Top 10 countries (deaths)', 'value': 'top1'},
-                                      {'label': 'Top 10 countries (wounded)', 'value': 'top2'}],
-                           value = 'top1',
-                           style = {'text-align': 'center', 'color': 'black'}, className = 'dcc_compon'),
-
-            dcc.Graph(id = 'multi_chart',
-                      config = {'displayModeBar': 'hover'}),
-
-        ], className = "create_container2 six columns"),
-
-    ], className = "row flex-display"),
-
-], id= "mainContainer", style={"display": "flex", "flex-direction": "column"})
-
-
-@app.callback(Output('multi_chart', 'figure'),
-              [Input('slider_year', 'value')],
-              [Input('radio_items', 'value')])
-def update_graph(slider_year, radio_items):
-
-    terr1 = terr.groupby(['country_txt', 'iyear'])[['nkill', 'nwound']].sum().reset_index()
-    terr2 = terr1[(terr1['iyear'] == slider_year)][['iyear', 'country_txt', 'nkill']].sort_values(by = ['nkill'], ascending = False).nlargest(10, columns = ['nkill']).reset_index()
-    terr3 = terr1[(terr1['iyear'] == slider_year)][['iyear', 'country_txt', 'nwound']].sort_values(by = ['nwound'], ascending = False).nlargest(10, columns = ['nwound']).reset_index()
-
-
-    if radio_items == 'top1':
-
-
-
-     return {
-        'data':[go.Bar(
-                    x=terr2['nkill'],
-                    y=terr2['country_txt'],
-                    text = terr2['nkill'],
-                    texttemplate = terr2['country_txt'].astype(str) + ' ' + ':' + ' ' + '%{text:s}' + ' ' + 'Killed',
-                    textposition = 'auto',
-                    marker = dict(color = '#dd1e35'),
-                    orientation = 'h',
-                    hoverinfo='text',
-                    hovertext=
-                    '<b>Country</b>: ' + terr2['country_txt'].astype(str) + '<br>' +
-                    '<b>Year</b>: ' + terr2['iyear'].astype(str) + '<br>' +
-                    '<b>Killed</b>: ' + [f'{x:,.0f}' for x in terr2['nkill']] + '<br>'
-
-
-              )],
-
-
-        'layout': go.Layout(
-             plot_bgcolor='#F2F2F2',
-             paper_bgcolor='#F2F2F2',
-             title={
-                'text': 'Year: ' + ' ' + str(slider_year),
-                'y': 0.9,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font': {
-                    'color': 'black',
-                    'size': 15
-                }
-            },
-
-
-             hovermode='closest',
-             margin = dict(l = 150),
-             xaxis=dict(title='<b>Killed</b>',
-                        color = 'black',
-                        showline = True,
-                        showgrid = True,
-                        showticklabels = True,
-                        linecolor = 'black',
-                        linewidth = 1,
-                        ticks = 'outside',
-                        tickfont = dict(
-                            family = 'Arial',
-                            size = 12,
-                            color = 'black'
-
-
-                )),
-
-             yaxis=dict(title='<b></b>',
-                        autorange = 'reversed',
-                        color = 'black',
-                        showline = False,
-                        showgrid = False,
-                        showticklabels = True,
-                        linecolor = 'black',
-                        linewidth = 1,
-                        ticks = 'outside',
-                        tickfont = dict(
-                            family = 'Arial',
-                            size = 12,
-                            color = 'black'
-                        )
-
+                # Severity filter
+                html.Label('Severity:', 
+                        style={'display': 'inline-block', 'margin-right': '10px', 'font-weight': 'bold', 'vertical-align': 'middle', **text_style}),
+                dcc.RadioItems(
+                    id='severity_filter',
+                    options=[
+                        {'label': 'All', 'value': 'all'},
+                        {'label': 'High', 'value': 'High'},
+                        {'label': 'Medium', 'value': 'Medium'},
+                        {'label': 'Low', 'value': 'Low'}
+                    ],
+                    value='all',
+                    inline=True,
+                    style={'display': 'inline-block', 'vertical-align': 'middle'}
                 ),
+            ], style={'display': 'inline-block', 'margin-right': '20px'}),
+            
+            # Scale filter
+            html.Div([
+                html.Label('Scale:', 
+                        style={'display': 'inline-block', 'margin-right': '10px', 'font-weight': 'bold', 'vertical-align': 'middle', **text_style}),
+                dcc.RadioItems(
+                    id='scale_toggle',
+                    options=[
+                        {'label': 'Logarithmic', 'value': 'log'},
+                        {'label': 'Linear', 'value': 'linear'}
+                    ],
+                    value='log',
+                    inline=True,
+                    style={'display': 'inline-block', 'vertical-align': 'middle'}
+                ),
+            ], style={'display': 'inline-block'}),
+        ], style={'margin-bottom': '10px', 'display': 'flex', 'justify-content': 'center'}),
 
-            legend = {
-                'orientation': 'h',
-                'bgcolor': '#F2F2F2',
-                'x': 0.5,
-                'y': 1.25,
-                'xanchor': 'center',
-                'yanchor': 'top'},
-            font = dict(
-                family = "sans-serif",
-                size = 12,
-                color = 'black',
-                 )
-        )
-
-    }
-
-    elif radio_items == 'top2':
-
-     return {
-            'data': [go.Bar(
-                x = terr3['nwound'],
-                y = terr3['country_txt'],
-                text = terr3['nwound'],
-                texttemplate = terr3['country_txt'].astype(str) + ' ' + ':' + ' ' +  '%{text:s}' + ' ' + 'Wounded',
-                textposition = 'auto',
-                marker = dict(color = 'orange'),
-                orientation = 'h',
-                hoverinfo = 'text',
-                hovertext =
-                '<b>Country</b>: ' + terr3['country_txt'].astype(str) + '<br>' +
-                '<b>Year</b>: ' + terr3['iyear'].astype(str) + '<br>' +
-                '<b>Wounded</b>: ' + [f'{x:,.0f}' for x in terr3['nwound']] + '<br>'
-
-            )],
-
-            'layout': go.Layout(
-                plot_bgcolor = '#F2F2F2',
-                paper_bgcolor = '#F2F2F2',
-                title={
-                    'text': 'Year: ' + ' ' + str(slider_year),
-                    'y': 0.9,
-                    'x': 0.5,
-                    'xanchor': 'center',
-                    'yanchor': 'top',
-                    'font': {
-                        'color': 'black',
-                        'size': 15
-                    }
-                },
-
-
-                hovermode = 'closest',
-                margin = dict(l = 150),
-                xaxis = dict(title = '<b>Wounded</b>',
-                             color = 'black',
-                             showline = True,
-                             showgrid = True,
-                             showticklabels = True,
-                             linecolor = 'black',
-                             linewidth = 1,
-                             ticks = 'outside',
-                             tickfont = dict(
-                                 family = 'Arial',
-                                 size = 12,
-                                 color = 'black'
-
-                             )),
-
-                yaxis = dict(title = '<b></b>',
-                             autorange = 'reversed',
-                             color = 'black',
-                             showline = False,
-                             showgrid = False,
-                             showticklabels = True,
-                             linecolor = 'black',
-                             linewidth = 1,
-                             ticks = 'outside',
-                             tickfont = dict(
-                                 family = 'Arial',
-                                 size = 12,
-                                 color = 'black'
-                             )
-
-                             ),
-
-                legend = {
-                    'orientation': 'h',
-                    'bgcolor': '#F2F2F2',
-                    'x': 0.5,
-                    'y': 1.25,
-                    'xanchor': 'center',
-                    'yanchor': 'top'},
-                font = dict(
-                    family = "sans-serif",
-                    size = 12,
-                    color = 'black',
-
+        # Source filter
+        html.Div([
+            html.Div([
+                html.Label('Source:', style={'font-weight': 'bold', 'margin-bottom': '3px', **text_style}),
+                dcc.Dropdown(
+                    id='source_filter',
+                    options=[{'label': source, 'value': source} for source in sources],
+                    value='All',
+                    clearable=False,
+                    style={'width': '100%'},
+                    optionHeight=60
                 )
-            )
+            ], style={'width': '200px', 'margin-right': '20px'}),
 
+            # Event type filter
+            html.Div([
+                html.Label('Event Type:', style={'font-weight': 'bold', 'margin-bottom': '3px', **text_style}),
+                dcc.Dropdown(
+                    id='type_filter',
+                    options=[{'label': etype, 'value': etype} for etype in event_types],
+                    value='All',
+                    clearable=False,
+                    style={'width': '100%'}
+                )
+            ], style={'width': '200px'})
+        ], style={
+            'display': 'flex',
+            'justify-content': 'center',
+            'gap': '10px',
+            'position': 'relative',
+            'zIndex': 999
+        }),
+    ], style={
+        **container_style, 
+        'max-width': '600px',
+        'margin': '0 auto'
+    }),
+
+    # Scrollable chart container
+    html.Div([
+        dcc.Graph(
+            id='events_chart',
+            config={'displayModeBar': 'hover'},
+        ),
+    ], style=scrollable_container_style),
+    
+    # Event Count and Active Filters
+    html.Div([
+        html.Div(id='event-count', style={'text-align': 'left', 'margin-left': '30px', 'font-weight': 'bold', **text_style})
+    ], style={'display': 'flex', 'justify-content': 'space-between'})
+
+], style={"max-width": "1200px", "margin": "0 auto", "padding": "0 20px 20px 20px"})
+
+@app.callback(
+    [Output('events_chart', 'figure'),
+     Output('event-count', 'children'),],
+    [Input('severity_filter', 'value'),
+     Input('scale_toggle', 'value'),
+     Input('source_filter', 'value'),
+     Input('type_filter', 'value')]
+)
+def update_graph(severity_filter, scale_type, source_filter, type_filter):
+    # Start with the full dataset
+    filtered_df = df.copy()
+    
+    # Apply filters
+    if severity_filter != 'all':
+        filtered_df = filtered_df[filtered_df['severity'] == severity_filter]
+    
+    if source_filter != 'All':
+        filtered_df = filtered_df[filtered_df['source'] == source_filter]
+    
+    if type_filter != 'All':
+        filtered_df = filtered_df[filtered_df['type'] == type_filter]
+    
+    # Sort by occurrences in descending order
+    filtered_df = filtered_df.sort_values(by='occurrences', ascending=False)
+    
+    # Generate hover text with event details
+    hover_text = []
+    for index, row in filtered_df.iterrows():
+        text = f"<b>Event ID:</b> {row['event_id']}<br>"
+        text += f"<b>Occurrences:</b> {row['occurrences']}<br>"
+        text += f"<b>Source:</b> {row['source']}<br>"
+        text += f"<b>Type:</b> {row['type']}<br>"
+        if row['severity'] != "Unknown":
+            text += f"<b>Severity:</b> {row['severity']}<br>"
+        if row['description']:
+            text += f"<b>Description:</b> {row['description']}<br>"
+        hover_text.append(text)
+    
+    # Prepare x-values based on scale type
+    x_values = filtered_df['occurrences']
+    
+    if scale_type == 'log':
+        x_values = np.log10(filtered_df['occurrences'] + 1)
+        x_axis_title = 'Number of Occurrences (Log Scale)'
+    else:
+        x_axis_title = 'Number of Occurrences'
+    
+    # Create bar chart
+    fig = go.Figure(data=[
+        go.Bar(
+            x=x_values,
+            y=[f"Event ID: {id}" for id in filtered_df['event_id']],
+            text=filtered_df['occurrences'],
+            textposition='auto',
+            textangle=0,
+            marker=dict(
+                color=[
+                    '#ffb919' if sev == 'High' else
+                    '#f1b3a9' if sev == 'Medium' else
+                    '#008779' if sev == 'Low' else
+                    '#c0eefa'
+                    for sev in filtered_df['severity']
+                ]
+            ),
+            orientation='h',
+            hoverinfo='text',
+            hovertext=hover_text,
+            width=0.7
+        )
+    ])
+    
+    # Calculate height based on total events
+    bar_height = 30
+    padding = 100
+    chart_height = max(200, len(filtered_df) * bar_height + padding)
+    
+    # Configure the layout
+    fig.update_layout(
+        plot_bgcolor='#F2F2F2',
+        paper_bgcolor='#FFF',
+        title={
+            'text': "Event Log Analysis",
+            'y': 0.98,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
+        hovermode='closest',
+        margin=dict(l=150, r=50, t=70, b=50),
+        height=chart_height,
+        yaxis={
+            'autorange': 'reversed',
+            'showgrid': False,
+            'zeroline': False,
+        },
+        xaxis={
+            'title': x_axis_title,
+            'showgrid': True,
+            'tickvals': [0, 1, 2, 3, 4, 5] if scale_type == 'log' else None,
+            'ticktext': ['0', '10', '100', '1K', '10K', '100K'] if scale_type == 'log' else None
         }
+    )
+    
+    total_events = filtered_df['occurrences'].sum()
+    event_count_text = f"Total Event IDs: {len(filtered_df)}. Total Events: {total_events}"
 
+    if len(filtered_df) == 0:
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            plot_bgcolor='rgba(0,0,0,0)',  # Transparent plot background
+            paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
+            annotations=[{
+                "text": "No events match the selected filters.<br>Please try different filter settings.",
+                "xref": "paper",
+                "yref": "paper",
+                "showarrow": False,
+                "font": {"size": 20, "color": "#333333"},
+                "x": 0.5,
+                "y": 0.5,
+                "xanchor": "center",
+                "yanchor": "middle",
+                "bgcolor": "rgba(0,0,0,0)",  # Transparent annotation background
+                "bordercolor": "rgba(0,0,0,0)"  # No border
+            }],
+            margin=dict(l=20, r=20, t=70, b=20),
+            height=300
+        )
+        return fig, ""
+
+    return fig, event_count_text
 
 if __name__ == '__main__':
     app.run(debug=True)
