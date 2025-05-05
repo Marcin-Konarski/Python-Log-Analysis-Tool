@@ -1,3 +1,4 @@
 *.yml
 *.dockerfile
 logs-collector.py
+venv/

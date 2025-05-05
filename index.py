@@ -23,7 +23,7 @@ def json_to_dataframe(json_data):
     events_data = []
     for event in json_data["events"]:
         event_id = event["event_id"]
-        occurrences = event["no_occurances"]
+        occurrences = event.get("no_occurances", 0)
         severity = event.get("severity", "Unknown")
         description = event.get("description", "")
         
@@ -65,12 +65,14 @@ sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'All'
 event_types = ['All'] + sorted([etype for etype in df['type'].unique() if etype != 'All'])
 
 scrollable_container_style = {
-    'height': '400px',
+    'height': '500px',
+    'width': '1200px',
     'overflow-y': 'scroll',
+    'justify-content': 'center', 
     'border': 'none',
     'border-radius': '15px',
     'padding': '10px',
-    'margin': '20px',
+    'margin': '0 auto',  
     'background-color': 'white',
 }
 

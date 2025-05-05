@@ -100,7 +100,7 @@ class WindowsEventLogGatherer:
         if not self.gathered_events:
             self.logger.info("No events were gathered skipping CSV export")
             return
-        with open(file_with_logs, "w", encoding='latin1', newline='') as file:
+        with open(file_with_logs, "w", encoding='utf-8', newline='') as file:
             fieldnames = self.gathered_events[0].keys()
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
@@ -209,7 +209,7 @@ def main():
     ]
     logs = WindowsEventLogGatherer(file_with_IP, log_types, log_levels)
     logs.gather_events(hours)
-    # logs.save_to_csv(file_with_logs)
+    logs.save_to_csv(file_with_logs)
 
     logs.save_uniqe_event_ids_and_types_to_the_file("events.txt")
 
