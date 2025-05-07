@@ -6,8 +6,8 @@ try:
     import pandas as pd # type: ignore
     import numpy as np # type: ignore
     import dash # type: ignore
-    from dash import dcc, html # type: ignore
-    from dash.dependencies import Input, Output # type: ignore
+    from dash import dcc, html, ctx # type: ignore
+    from dash.dependencies import Input, Output, State # type: ignore
     import plotly.graph_objs as go # type: ignore
 except ImportError:
     sys.exit("Error: This script requires following modules: pandas, numpy, dash and plotly. Please install with 'pip install pandas numpy dash plotly'")
@@ -17,39 +17,32 @@ except ImportError:
 def load_json_data(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
+    
 # Convert JSON to DataFrame for easier processing
 def json_to_dataframe(json_data):
     events_data = []
     for event in json_data["events"]:
-        event_id = event["event_id"]
-        occurrences = event["no_occurances"]
-        severity = event.get("severity", "Unknown")
-        description = event.get("description", "")
-        
-        # Get source and type from first specific_event (if available)
         specific_events = event.get("specific_events", [])
-        if specific_events and isinstance(specific_events, list):
-            source = specific_events[0].get("source", "Unknown")
-            event_type = specific_events[0].get("event_type", "Unknown")
-        else:
-            source = "Unknown"
-            event_type = "Unknown"
         
-        events_data.append({
-            "event_id": event_id,
-            "occurrences": occurrences,
-            "severity": severity,
-            "description": description,
-            "source": source,
-            "type": event_type
-        })
+        if specific_events and isinstance(specific_events, list):
+            for specific_event in specific_events:
+                events_data.append({
+                    "event_id": specific_event.get("event_id", "Unknown"),
+                    "occurrences": event.get("no_occurances", 0),
+                    "severity": specific_event.get("event_type", "Unknown"),  # Używamy event_type jako severity
+                    "description": "",  # Brak opisu w danych wejściowych
+                    "source": specific_event.get("source", "Unknown"),
+                    "type": specific_event.get("event_type", "Unknown"),
+                    "date": specific_event.get("date", "Unknown"),
+                    "message": specific_event.get("message", "")
+                })
     
     return pd.DataFrame(events_data)
 
 # Load data
 data = load_json_data("analysis_results.json")
 df = json_to_dataframe(data)
+df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
 # Create Dash app
 app = dash.Dash(
@@ -61,12 +54,12 @@ app = dash.Dash(
 )
 
 # Get unique values for dropdown options
-sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'All'])
-event_types = ['All'] + sorted([etype for etype in df['type'].unique() if etype != 'All'])
+sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'Unknown' and src != 'All'])
+event_types = ['All'] + sorted([etype for etype in df['type'].unique() if etype != 'Unknown' and etype != 'All'])
 
 scrollable_container_style = {
-    'height': '400px',
-    'overflow-y': 'scroll',
+    'height': '500px',
+    'overflow-y': 'auto',
     'border': 'none',
     'border-radius': '15px',
     'padding': '30px',
@@ -76,243 +69,242 @@ scrollable_container_style = {
 
 container_style = {
     'background-color': '#f9f9f9',
-    'border-radius': '15px',
+    'border-radius': '5px',
     'box-shadow': '0 4px 6px rgba(0, 0, 0, 0.1)',
-    'padding': '15px 20px',
-    'margin-bottom': '15px',
+    'padding': '10px 15px',
+    'margin-bottom': '10px',
 }
 
 text_style = {
     'color': '#333333',
 }
 
+pagination_style = {
+    'display': 'flex',
+    'justify-content': 'center',
+    'align-items': 'center',
+    'margin': '10px 0',
+}
+
 app.layout = html.Div([
-    html.H3('Windows Event Log Analysis', 
-            style={'margin-bottom': '20px', 'color': '#333333', 'text-align': 'center', 'padding-top': '10px'}),
+    html.H3('Windows Event Log Viewer',
+            style={'margin-bottom': '10px', 'color': '#333333', 'text-align': 'center', 'padding-top': '0px'}),
 
-    # Filter section
     html.Div([
+        #Source filter
         html.Div([
-            html.Div([
-                # Severity filter
-                html.Label('Severity:', 
-                        style={'display': 'inline-block', 'margin-right': '10px', 'font-weight': 'bold', 'vertical-align': 'middle', **text_style}),
-                dcc.RadioItems(
-                    id='severity_filter',
-                    options=[
-                        {'label': 'All', 'value': 'all'},
-                        {'label': 'High', 'value': 'High'},
-                        {'label': 'Medium', 'value': 'Medium'},
-                        {'label': 'Low', 'value': 'Low'}
-                    ],
-                    value='all',
-                    inline=True,
-                    style={'display': 'inline-block', 'vertical-align': 'middle'}
-                ),
-            ], style={'display': 'inline-block', 'margin-right': '20px'}),
-            
-            # Scale filter
-            html.Div([
-                html.Label('Scale:', 
-                        style={'display': 'inline-block', 'margin-right': '10px', 'font-weight': 'bold', 'vertical-align': 'middle', **text_style}),
-                dcc.RadioItems(
-                    id='scale_toggle',
-                    options=[
-                        {'label': 'Logarithmic', 'value': 'log'},
-                        {'label': 'Linear', 'value': 'linear'}
-                    ],
-                    value='log',
-                    inline=True,
-                    style={'display': 'inline-block', 'vertical-align': 'middle'}
-                ),
-            ], style={'display': 'inline-block'}),
-        ], style={'margin-bottom': '10px', 'display': 'flex', 'justify-content': 'center'}),
+            html.Label('Source:', style={'font-weight': 'bold', **text_style}),
+            dcc.Dropdown(
+                id='source_filter',
+                options=[{'label': source, 'value': source} for source in sources],
+                value='All',
+                clearable=False
+            )
+        ], style={'width': '200px', 'margin-right': '20px'}),
 
-        # Source filter
+        #Type filter
         html.Div([
-            html.Div([
-                html.Label('Source:', style={'font-weight': 'bold', 'margin-bottom': '3px', **text_style}),
-                dcc.Dropdown(
-                    id='source_filter',
-                    options=[{'label': source, 'value': source} for source in sources],
-                    value='All',
-                    clearable=False,
-                    style={'width': '100%'},
-                    optionHeight=60
-                )
-            ], style={'width': '200px', 'margin-right': '20px'}),
+            html.Label('Event Type:', style={'font-weight': 'bold', **text_style}),
+            dcc.Dropdown(
+                id='type_filter',
+                options=[{'label': etype, 'value': etype} for etype in event_types],
+                value='All',
+                clearable=False
+            )
+        ], style={'width': '200px', 'margin-right': '20px'}),
+        
+        #ID Search
+        html.Div([
+            html.Label('Event ID:', style={'font-weight': 'bold', **text_style}),
+            dcc.Input(id='event_id_filter', type='text', placeholder='np. 4624', debounce=True)
+        ], style={'margin-right': '20px'}),
+        
+        # Date filter
+        html.Div([
+            html.Label('Date Range:', style={'font-weight': 'bold', **text_style}),
+            dcc.DatePickerRange(
+                id='date_range',
+                start_date_placeholder_text="Start Date",
+                end_date_placeholder_text="End Date",
+                display_format='YYYY-MM-DD',
+                minimum_nights=0,
+                clearable=True,
+            ),
+        ], style={'margin-right': '20px'}),
 
-            # Event type filter
-            html.Div([
-                html.Label('Event Type:', style={'font-weight': 'bold', 'margin-bottom': '3px', **text_style}),
-                dcc.Dropdown(
-                    id='type_filter',
-                    options=[{'label': etype, 'value': etype} for etype in event_types],
-                    value='All',
-                    clearable=False,
-                    style={'width': '100%'}
-                )
-            ], style={'width': '200px'})
-        ], style={
-            'display': 'flex',
-            'justify-content': 'center',
-            'gap': '10px',
-            'position': 'relative',
-            'zIndex': 999
-        }),
-    ], style={
-        **container_style, 
-        'max-width': '600px',
-        'margin': '0 auto'
-    }),
+        html.Div([
+            html.Label('Start Time (HH:MM):', style={'font-weight': 'bold', **text_style}),
+            dcc.Input(id='start_time', type='text', placeholder='13:00', debounce=True)
+        ], style={'margin-right': '20px'}),
 
-    # Scrollable chart container
-    html.Div([
-        dcc.Graph(
-            id='events_chart',
-            config={'displayModeBar': 'hover'},
-        ),
-    ], style=scrollable_container_style),
+        html.Div([
+            html.Label('End Time (HH:MM):', style={'font-weight': 'bold', **text_style}),
+            dcc.Input(id='end_time', type='text', placeholder='17:00', debounce=True)
+        ]),
+
+    ], style={'display': 'flex', 'justify-content': 'center', 'flex-wrap': 'wrap', 'gap': '5px'}),
+
+    html.Div(id='logs_container', style=scrollable_container_style),
     
-    # Event Count and Active Filters
     html.Div([
-        html.Div(id='event-count', style={'text-align': 'left', 'margin-left': '30px', 'font-weight': 'bold', **text_style})
-    ], style={'display': 'flex', 'justify-content': 'space-between'})
+        html.Button('Previous', id='prev_page', n_clicks=0, 
+                   style={'margin-right': '10px', 'padding': '5px 15px'}),
+        html.Span(id='page_info', style={'margin': '0 10px'}),
+        html.Button('Next', id='next_page', n_clicks=0,
+                   style={'margin-left': '10px', 'padding': '5px 15px'})
+    ], style=pagination_style),
 
-], style={"max-width": "1200px", "margin": "0 auto", "padding": "0 20px 20px 20px"})
+    dcc.Store(id='filtered_logs_store'),
+    dcc.Store(id='page_store', data=0)
+], style={'max-width': '1000px', 'margin': '0 auto', 'padding': '10px'})
 
 @app.callback(
-    [Output('events_chart', 'figure'),
-     Output('event-count', 'children'),],
-    [Input('severity_filter', 'value'),
-     Input('scale_toggle', 'value'),
-     Input('source_filter', 'value'),
-     Input('type_filter', 'value')]
+    Output('filtered_logs_store', 'data'),
+    Output('page_store', 'data'),
+    Input('source_filter', 'value'),
+    Input('type_filter', 'value'),
+    Input('date_range', 'start_date'),
+    Input('date_range', 'end_date'),
+    Input('start_time', 'value'),
+    Input('end_time', 'value'),
+    Input('event_id_filter', 'value'),
+    Input('prev_page', 'n_clicks'),
+    Input('next_page', 'n_clicks'),
+    State('filtered_logs_store', 'data'),
+    State('page_store', 'data')
 )
-def update_graph(severity_filter, scale_type, source_filter, type_filter):
-    # Start with the full dataset
-    filtered_df = df.copy()
-    
-    # Apply filters
-    if severity_filter != 'all':
-        filtered_df = filtered_df[filtered_df['severity'] == severity_filter]
-    
-    if source_filter != 'All':
-        filtered_df = filtered_df[filtered_df['source'] == source_filter]
-    
-    if type_filter != 'All':
-        filtered_df = filtered_df[filtered_df['type'] == type_filter]
-    
-    # Sort by occurrences in descending order
-    filtered_df = filtered_df.sort_values(by='occurrences', ascending=False)
-    
-    # Generate hover text with event details
-    hover_text = []
-    for index, row in filtered_df.iterrows():
-        text = f"<b>Event ID:</b> {row['event_id']}<br>"
-        text += f"<b>Occurrences:</b> {row['occurrences']}<br>"
-        text += f"<b>Source:</b> {row['source']}<br>"
-        text += f"<b>Type:</b> {row['type']}<br>"
-        if row['severity'] != "Unknown":
-            text += f"<b>Severity:</b> {row['severity']}<br>"
-        if row['description']:
-            text += f"<b>Description:</b> {row['description']}<br>"
-        hover_text.append(text)
-    
-    # Prepare x-values based on scale type
-    x_values = filtered_df['occurrences']
-    
-    if scale_type == 'log':
-        x_values = np.log10(filtered_df['occurrences'] + 1)
-        x_axis_title = 'Number of Occurrences (Log Scale)'
-    else:
-        x_axis_title = 'Number of Occurrences'
-    
-    # Create bar chart
-    fig = go.Figure(data=[
-        go.Bar(
-            x=x_values,
-            y=[f"Event ID: {id}" for id in filtered_df['event_id']],
-            text=filtered_df['occurrences'],
-            textposition='auto',
-            textangle=0,
-            marker=dict(
-                color=[
-                    '#ffb919' if sev == 'High' else
-                    '#f1b3a9' if sev == 'Medium' else
-                    '#008779' if sev == 'Low' else
-                    '#c0eefa'
-                    for sev in filtered_df['severity']
-                ]
-            ),
-            orientation='h',
-            hoverinfo='text',
-            hovertext=hover_text,
-            width=0.7
-        )
-    ])
-    
-    # Calculate height based on total events
-    bar_height = 30
-    padding = 100
-    chart_height = max(200, len(filtered_df) * bar_height + padding)
-    
-    # Configure the layout
-    fig.update_layout(
-        plot_bgcolor='#F2F2F2',
-        paper_bgcolor='#FFF',
-        title={
-            'text': "Event Log Analysis",
-            'y': 0.98,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'
-        },
-        hovermode='closest',
-        margin=dict(l=150, r=50, t=70, b=50),
-        height=chart_height,
-        yaxis={
-            'autorange': 'reversed',
-            'showgrid': False,
-            'zeroline': False,
-        },
-        xaxis={
-            'title': x_axis_title,
-            'showgrid': True,
-            'tickvals': [0, 1, 2, 3, 4, 5] if scale_type == 'log' else None,
-            'ticktext': ['0', '10', '100', '1K', '10K', '100K'] if scale_type == 'log' else None
-        }
-    )
-    
-    total_events = filtered_df['occurrences'].sum()
-    event_count_text = f"Total Event IDs: {len(filtered_df)}. Total Events: {total_events}"
+def update_logs_and_page(source, event_type, start_date, end_date, start_time, end_time, event_id, prev_clicks, next_clicks, stored_logs, current_page):
+    ctx = dash.callback_context
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
 
-    if len(filtered_df) == 0:
-        fig = go.Figure()
-        fig.update_layout(
-            xaxis={"visible": False},
-            yaxis={"visible": False},
-            plot_bgcolor='rgba(0,0,0,0)',  # Transparent plot background
-            paper_bgcolor='rgba(0,0,0,0)',  # Transparent paper background
-            annotations=[{
-                "text": "No events match the selected filters.<br>Please try different filter settings.",
-                "xref": "paper",
-                "yref": "paper",
-                "showarrow": False,
-                "font": {"size": 20, "color": "#333333"},
-                "x": 0.5,
-                "y": 0.5,
-                "xanchor": "center",
-                "yanchor": "middle",
-                "bgcolor": "rgba(0,0,0,0)",  # Transparent annotation background
-                "bordercolor": "rgba(0,0,0,0)"  # No border
-            }],
-            margin=dict(l=20, r=20, t=70, b=20),
-            height=300
-        )
-        return fig, ""
+    # Jeśli zmieniono filtr
+    if triggered_id in {'source_filter', 'type_filter', 'date_range', 'start_time', 'end_time', 'event_id_filter'}:
+        filtered_df = df.copy()
 
-    return fig, event_count_text
+        if source != 'All':
+            filtered_df = filtered_df[filtered_df['source'] == source]
+        if event_type != 'All':
+            filtered_df = filtered_df[filtered_df['type'] == event_type]
+        if event_id:
+            filtered_df = filtered_df[filtered_df['event_id'].astype(str).str.contains(event_id.strip(), case=False, na=False)]
+
+        try:
+            if start_date:
+                start_str = f"{start_date} {start_time or '00:00'}"
+                start_dt = pd.to_datetime(start_str, errors='coerce')
+                filtered_df = filtered_df[filtered_df['date'] >= start_dt]
+            if end_date:
+                end_str = f"{end_date} {end_time or '23:59'}"
+                end_dt = pd.to_datetime(end_str, errors='coerce')
+                filtered_df = filtered_df[filtered_df['date'] <= end_dt]
+        except Exception:
+            pass
+        
+
+        filtered_df = filtered_df.sort_values(by='date', ascending=False)
+        return filtered_df.to_dict('records'), 0
+
+    # Jeśli kliknięto przyciski stronicowania
+    elif triggered_id in {'prev_page', 'next_page'} and stored_logs is not None:
+        total_pages = max((len(stored_logs) - 1) // 25 + 1, 1)
+
+        if triggered_id == 'prev_page' and current_page > 0:
+            return stored_logs, current_page - 1
+        elif triggered_id == 'next_page' and (current_page + 1) * 25 < len(stored_logs):
+            return stored_logs, current_page + 1
+        else:
+            return stored_logs, current_page
+
+    # Pierwsze ładowanie - zwróć pełne dane
+    if stored_logs is None:
+        filtered_df = df.sort_values(by='date', ascending=False)
+        return filtered_df.to_dict('records'), 0
+
+    return stored_logs, current_page
+
+@app.callback(
+    Output('logs_container', 'children'),
+    Output('page_info', 'children'),
+    Input('filtered_logs_store', 'data'),
+    Input('page_store', 'data')
+)
+def update_display(logs_data, page):
+    if not logs_data:
+        return html.Div("No logs found."), ""
+
+    start = page * 25
+    end = start + 25
+    page_logs = logs_data[start:end]
+
+    log_elements = []
+    current_date = None
+    
+    for log in page_logs:
+        # Pobierz typ eventu i ustaw odpowiedni kolor tła
+        event_type = log.get('type', '')
+        if 'ERROR' in event_type:
+            bg_color = '#FFAACF'  # jasny czerwony
+        elif 'WARNING' in event_type:
+            bg_color = '#fff8e1'  # jasny żółty
+        elif 'INFORMATION' in event_type or 'info' in event_type:
+            bg_color = '#e3f2fd'  # jasny niebieski
+        else:
+            bg_color = 'white'  # domyślny kolor
+        
+        # Pobierz datę z loga i sformatuj tylko część daty (bez czasu)
+        log_date = log.get('date', '')
+        try:
+            if isinstance(log_date, str):
+                date_obj = pd.to_datetime(log_date, errors='coerce')
+                display_date = date_obj.strftime('%Y-%m-%d') if not pd.isna(date_obj) else 'Unknown date'
+            else:
+                display_date = log_date.strftime('%Y-%m-%d')
+        except:
+            display_date = 'Unknown date'
+        
+        # Jeśli data się zmieniła, dodaj nagłówek z datą
+        if display_date != current_date:
+            log_elements.append(html.Div(
+                display_date,
+                style={
+                    'background-color': '#e0e0e0',
+                    'padding': '15px',
+                    'margin': '5px 0 5px 0',
+                    'border-radius': '5px',
+                    'font-weight': 'bold',
+                    'text-align': 'center',
+                    'box-shadow': '0 2px 3px rgba(0,0,0,0.1)'
+                }
+            ))
+            current_date = display_date
+            
+        date_str = log.get('date', '')
+        if isinstance(date_str, str):
+            pass
+        else:
+            try:
+                date_str = date_str.strftime('%Y-%m-%d %H:%M:%S')
+            except:
+                date_str = str(date_str)
+                
+        log_elements.append(html.Div([
+            html.P(f"Time: {date_str.split('T')[1] if 'T' in date_str else 'Unknown'}", 
+                   style={'margin': '0', 'font-weight': 'bold', 'color': '#555'}),
+            html.P(f"Source: {log.get('source', 'Unknown')}", style={'margin': '0'}),
+            html.P(f"Type: {log.get('type', 'Unknown')}", style={'margin': '0'}),
+            html.P(f"Event ID: {log.get('event_id', 'Unknown')}", style={'margin': '0'}),
+            html.P(f"Message: {log.get('message', '')}", 
+                  style={'margin': '0', 'white-space': 'pre-wrap', 'margin-top': '5px'}),
+        ],style={
+            **container_style,
+            'background-color': bg_color,  # Dodajemy kolor tła
+        }))
+
+    total_pages = max((len(logs_data) - 1) // 25 + 1, 1)
+    page_text = f"Page {page + 1} of {total_pages}"
+
+    return log_elements, page_text
+
 
 if __name__ == '__main__':
     app.run(debug=True)
