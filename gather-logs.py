@@ -5,6 +5,7 @@ import subprocess
 import datetime
 import csv
 import logging
+import xml.etree.ElementTree as ET
 from typing import List, Dict, Any, Tuple
 from contextlib import contextmanager
 
@@ -40,11 +41,127 @@ class WindowsEventLogGatherer:
 
         if self.ping_host():
             for log in self.log_types:
-                events = self.read_event_log(log, hours)
+                if log == "Microsoft-Windows-Windows Defender/Operational":
+                    events = self.read_defender_log(hours)
+                else:
+                    events = self.read_event_log(log, hours)
                 self.gathered_events.extend(events)
         else:
             self.logger.warning(f"{self.hostname} is down! Exiting...")
         return self.gathered_events
+
+    def read_defender_log(self, hours: int) -> List[Dict[str, Any]]:
+        """Special handling for Windows Defender logs using EVTX API"""
+        begin_sec = time.time()
+        seconds_per_hour = 3600
+        how_many_seconds_back_to_search = seconds_per_hour * hours
+        events_from_log = []
+
+        try:
+            self.logger.info("Scanning Windows Defender events")
+            
+            # Create a query for events in the last X hours
+            query = f"*[System[TimeCreated[timediff(@SystemTime) <= {how_many_seconds_back_to_search * 1000}]]]"
+            
+            # Open the Defender log channel
+            log_handle = win32evtlog.EvtQuery(
+                "Microsoft-Windows-Windows Defender/Operational",
+                win32evtlog.EvtQueryChannelPath | win32evtlog.EvtQueryReverseDirection,
+                query,
+                None
+            )
+
+            event_count = 0
+            while True:
+                events = win32evtlog.EvtNext(log_handle, 10)  # Get 10 events at a time
+                if not events:
+                    break
+
+                for event in events:
+                    event_count += 1
+                    try:
+                        event_object = self.normalize_defender_logs(event)
+                        events_from_log.append(event_object)
+                    except Exception as e:
+                        self.logger.warning(f"Error processing Defender event: {e}")
+
+            self.logger.info(f"Processed {event_count} Windows Defender events")
+            return events_from_log
+        except Exception as e:
+            self.logger.error(f"Error reading Defender log: {e}")
+            return []
+
+    def normalize_defender_logs(self, event) -> Dict[str, Any]:
+        """Normalize Windows Defender events using XML parsing"""
+        try:
+            # Render the event as XML
+            xml = win32evtlog.EvtRender(event, win32evtlog.EvtRenderEventXml)
+            
+            # Parse the XML to extract properties
+            ns = {'ns': 'http://schemas.microsoft.com/win/2004/08/events/event'}
+            root = ET.fromstring(xml)
+            
+            system = root.find('ns:System', ns)
+            event_data = root.find('ns:EventData', ns) or root.find('ns:UserData', ns)
+            
+            # Extract basic properties
+            event_id = int(system.find('ns:EventID', ns).text)
+            provider = system.find('ns:Provider', ns).get('Name')
+            time_created = system.find('ns:TimeCreated', ns).get('SystemTime')
+            level = int(system.find('ns:Level', ns).text)
+            
+            # Parse timestamp
+            dt = datetime.datetime.strptime(time_created[:19], "%Y-%m-%dT%H:%M:%S")
+            formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Extract message data
+            message = []
+            if event_data is not None:
+                for data in event_data.findall('ns:Data', ns):
+                    if data.text:
+                        message.append(data.text.strip())
+            
+            return {
+                "Event": "Microsoft-Windows-Windows Defender/Operational",
+                "Time": formatted_time,
+                "Event_Type": self.map_defender_level(level),
+                "Event_ID": event_id,
+                "Event_Category": system.find('ns:Task', ns).text,
+                "Source": provider,
+                "Message": " | ".join(message) if message else "No message data",
+                "RecordNumber": int(system.find('ns:EventRecordID', ns).text)
+            }
+        except Exception as e:
+            self.logger.warning(f"Error normalizing Defender event: {e}")
+            return {
+                "Event": "Microsoft-Windows-Windows Defender/Operational",
+                "Time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "Event_Type": "ERROR",
+                "Event_ID": 0,
+                "Event_Category": "Processing Error",
+                "Source": "LogParser",
+                "Message": f"Failed to parse event: {str(e)}",
+                "RecordNumber": 0
+            }
+        
+    def get_defender_message(self, event) -> str:
+        """Extract and format message from Defender event"""
+        try:
+            message = win32evtlog.EvtFormatMessage(event)
+            if message:
+                return message.replace("\n", " ").replace("\r", " ").replace(",", ";")
+            return "No message data"
+        except:
+            return "No message data"
+
+    def map_defender_level(self, level: int) -> str:
+        """Map Defender log levels to consistent types"""
+        if level <= 1: return "CRITICAL"
+        if level == 2: return "ERROR"
+        if level == 3: return "WARNING"
+        if level == 4: return "INFORMATION"
+        return "OTHER"
+
 
     @contextmanager # Using contextmanager to prevent resource leaks if an error occurs during log processing
     def open_event_log(self, log_type: str):
@@ -96,19 +213,8 @@ class WindowsEventLogGatherer:
                 self.logger.error(f"Win32 error occurred: {e}")
         return events_from_log
 
-    def save_to_csv(self, file_with_logs: str) -> None:
-        if not self.gathered_events:
-            self.logger.info("No events were gathered skipping CSV export")
-            return
-        with open(file_with_logs, "w", encoding='utf-8', newline='') as file:
-            fieldnames = self.gathered_events[0].keys()
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(self.gathered_events)
-        self.logger.info(f"Saved logs to {file_with_logs} file")
-
     def normalize_logs(self, event, log_type: str) -> Tuple[Dict[str, Any], float, str]:
-        # Get original event time format
+        """Normalize traditional event logs"""
         original_event_time = event.TimeGenerated.Format()
         dt = datetime.datetime.strptime(original_event_time, "%a %b %d %H:%M:%S %Y")
         formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -116,13 +222,11 @@ class WindowsEventLogGatherer:
         seconds = self.date_to_sec(original_event_time)
         event_type = event.EventType
         
-        # Map event type to string representation
         event_type_map = {
-            win32con.EVENTLOG_ERROR_TYPE: "ERROR",
+            win32con.EVENTLOG_ERROR_TYPE:"ERROR",
+            win32con.EVENTLOG_AUDIT_FAILURE: "ERROR",
             win32con.EVENTLOG_WARNING_TYPE: "WARNING",
             win32con.EVENTLOG_INFORMATION_TYPE: "INFORMATION",
-            win32con.EVENTLOG_AUDIT_SUCCESS: "AUDIT_SUCCESS",
-            win32con.EVENTLOG_AUDIT_FAILURE: "AUDIT_FAILURE"
         }
         event_type_string = event_type_map.get(event_type, "OTHER")
         
@@ -130,14 +234,13 @@ class WindowsEventLogGatherer:
         if message is None:
             message = "No message data"
         elif isinstance(message, tuple):
-            # Keep message as a list format string
             message = str(list(str(m) for m in message if m is not None))
 
         return {
             "Event": log_type,
             "Time": formatted_time,
             "Event_Type": event_type_string,
-            "Event_ID": event.EventID & 0xFFFF,  # Handle large event IDs correctly
+            "Event_ID": event.EventID & 0xFFFF,
             "Event_Category": event.EventCategory,
             "Source": event.SourceName,
             "Message": message,
@@ -153,18 +256,30 @@ class WindowsEventLogGatherer:
 
     def ping_host(self):
         param = '-n' if sys.platform.lower() == 'win32' else '-c'
-        timeout_param = '-w' if sys.platform.lower() == 'win32' else '-W' # Timeout parameter to avoid hanging or unresponsive hosts
+        timeout_param = '-w' if sys.platform.lower() == 'win32' else '-W'
         try:
             result = subprocess.run(
                 ["ping", param, "1", timeout_param, "2", self.hostname],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                timeout=5 # Overall timeout for the subprocess
+                timeout=5
             )
             return result.returncode == 0
         except Exception:
             self.logger.warning(f"Ping to {self.hostname} failed or timed out")
             return False
+
+    
+    def save_to_csv(self, file_with_logs: str) -> None:
+        if not self.gathered_events:
+            self.logger.info("No events were gathered skipping CSV export")
+            return
+        with open(file_with_logs, "w", encoding='utf-8', newline='') as file:
+            fieldnames = self.gathered_events[0].keys()
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(self.gathered_events)
+        self.logger.info(f"Saved logs to {file_with_logs} file")
 
     def save_uniqe_event_ids_and_types_to_the_file(self, file_path):
         unique_event_types = set()
@@ -174,7 +289,6 @@ class WindowsEventLogGatherer:
             unique_event_types.add(event["Event_Type"])
             unique_event_ids.add(event["Event_ID"])
 
-        # Write the unique values to a file
         self.logger.info(f"Saved all event types and event IDs to the {file_path} file")
         with open(file_path, "w", encoding="utf-8") as file:
             file.write("Unique Event_Types:\n")
@@ -184,7 +298,7 @@ class WindowsEventLogGatherer:
             file.write("\nUnique Event_IDs:\n")
             for event_id in sorted(unique_event_ids):
                 file.write(str(event_id) + " ")
-
+                
 def main():
     logging.basicConfig(
         level=logging.INFO,
@@ -199,10 +313,10 @@ def main():
         "Security", 
         "Application", 
         "Microsoft-Windows-Sysmon/Operational",
+        "Microsoft-Windows-Windows Defender/Operational"
     ]
     log_levels = [
-        "AUDIT_FAILURE",
-        "AUDIT_SUCCESS",
+        "CRITICAL",
         "ERROR",
         "INFORMATION",
         "WARNING",

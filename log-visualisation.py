@@ -14,9 +14,28 @@ except ImportError:
 
 
 # Load JSON data
-def load_json_data(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+# def load_json_data(file_path):
+#     with open(file_path, 'r', encoding='utf-8') as f:
+#         return json.load(f)
+
+import mysql.connector
+
+def load_data_from_mysql():
+    conn = mysql.connector.connect(
+        host="192.168.57.130",
+        port=3306,
+        user="LU",
+        password="1111",
+        database="event_logs"
+    )
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT event_id, event_type, source, date, message FROM logs")
+    rows = cursor.fetchall()
+    df = pd.DataFrame(rows)
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    return df
+
+df = load_data_from_mysql()
     
 # Convert JSON to DataFrame for easier processing
 def json_to_dataframe(json_data):
@@ -32,7 +51,7 @@ def json_to_dataframe(json_data):
                     "severity": specific_event.get("event_type", "Unknown"),  # Używamy event_type jako severity
                     "description": "",  # Brak opisu w danych wejściowych
                     "source": specific_event.get("source", "Unknown"),
-                    "type": specific_event.get("event_type", "Unknown"),
+                    "event_type": specific_event.get("event_type", "Unknown"),
                     "date": specific_event.get("date", "Unknown"),
                     "message": specific_event.get("message", "")
                 })
@@ -40,9 +59,9 @@ def json_to_dataframe(json_data):
     return pd.DataFrame(events_data)
 
 # Load data
-data = load_json_data("analysis_results.json")
-df = json_to_dataframe(data)
-df['date'] = pd.to_datetime(df['date'], errors='coerce')
+# data = load_json_data("analysis_results.json")
+# df = json_to_dataframe(data)
+
 
 # Create Dash app
 app = dash.Dash(
@@ -55,7 +74,7 @@ app = dash.Dash(
 
 # Get unique values for dropdown options
 sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'Unknown' and src != 'All'])
-event_types = ['All'] + sorted([etype for etype in df['type'].unique() if etype != 'Unknown' and etype != 'All'])
+event_types = ['All'] + sorted([etype for etype in df['event_type'].unique() if etype != 'Unknown' and etype != 'All'])
 
 scrollable_container_style = {
     'height': '500px',
@@ -142,7 +161,7 @@ app.layout = html.Div([
             dcc.Input(id='end_time', type='text', placeholder='17:00', debounce=True)
         ]),
 
-    ], style={'display': 'flex', 'justify-content': 'center', 'flex-wrap': 'wrap', 'gap': '5px'}),
+    ], style={'display': 'flex', 'justify-content': 'center', 'flex-wrap': 'wrap', 'gap': '15px'}),
 
     html.Div(id='logs_container', style=scrollable_container_style),
     
@@ -184,7 +203,7 @@ def update_logs_and_page(source, event_type, start_date, end_date, start_time, e
         if source != 'All':
             filtered_df = filtered_df[filtered_df['source'] == source]
         if event_type != 'All':
-            filtered_df = filtered_df[filtered_df['type'] == event_type]
+            filtered_df = filtered_df[filtered_df['event_type'] == event_type]
         if event_id:
             filtered_df = filtered_df[filtered_df['event_id'].astype(str).str.contains(event_id.strip(), case=False, na=False)]
 
@@ -241,7 +260,7 @@ def update_display(logs_data, page):
     
     for log in page_logs:
         # Pobierz typ eventu i ustaw odpowiedni kolor tła
-        event_type = log.get('type', '')
+        event_type = log.get('event_type', '')
         if 'ERROR' in event_type:
             bg_color = '#FFAACF'  # jasny czerwony
         elif 'WARNING' in event_type:
@@ -291,7 +310,7 @@ def update_display(logs_data, page):
             html.P(f"Time: {date_str.split('T')[1] if 'T' in date_str else 'Unknown'}", 
                    style={'margin': '0', 'font-weight': 'bold', 'color': '#555'}),
             html.P(f"Source: {log.get('source', 'Unknown')}", style={'margin': '0'}),
-            html.P(f"Type: {log.get('type', 'Unknown')}", style={'margin': '0'}),
+            html.P(f"Type: {log.get('event_type', 'Unknown')}", style={'margin': '0'}),
             html.P(f"Event ID: {log.get('event_id', 'Unknown')}", style={'margin': '0'}),
             html.P(f"Message: {log.get('message', '')}", 
                   style={'margin': '0', 'white-space': 'pre-wrap', 'margin-top': '5px'}),
