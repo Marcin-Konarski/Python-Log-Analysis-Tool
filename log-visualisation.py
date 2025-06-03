@@ -12,12 +12,6 @@ try:
 except ImportError:
     sys.exit("Error: This script requires following modules: pandas, numpy, dash and plotly. Please install with 'pip install pandas numpy dash plotly'")
 
-
-# Load JSON data
-# def load_json_data(file_path):
-#     with open(file_path, 'r', encoding='utf-8') as f:
-#         return json.load(f)
-
 import mysql.connector
 
 def load_data_from_mysql():
@@ -305,18 +299,25 @@ def update_display(logs_data, page):
                 date_str = date_str.strftime('%Y-%m-%d %H:%M:%S')
             except:
                 date_str = str(date_str)
-                
+        
+        message_full = log.get('message', '')
+        message_preview = message_full[:1000] + ('...' if len(message_full) > 1000 else '')
+
         log_elements.append(html.Div([
             html.P(f"Time: {date_str.split('T')[1] if 'T' in date_str else 'Unknown'}", 
-                   style={'margin': '0', 'font-weight': 'bold', 'color': '#555'}),
+                style={'margin': '0', 'font-weight': 'bold', 'color': '#555'}),
             html.P(f"Source: {log.get('source', 'Unknown')}", style={'margin': '0'}),
             html.P(f"Type: {log.get('event_type', 'Unknown')}", style={'margin': '0'}),
             html.P(f"Event ID: {log.get('event_id', 'Unknown')}", style={'margin': '0'}),
-            html.P(f"Message: {log.get('message', '')}", 
-                  style={'margin': '0', 'white-space': 'pre-wrap', 'margin-top': '5px'}),
-        ],style={
+
+            html.Details([
+                html.Summary("Message:", style={'cursor': 'pointer', 'margin-top': '5px'}),
+                html.Div(message_full, style={'white-space': 'pre-wrap', 'margin-top': '5px'})
+            ]) if len(message_full) > 1000 else
+            html.P(f"Message: {message_full}", style={'margin': '0', 'white-space': 'pre-wrap', 'margin-top': '5px'})
+        ], style={
             **container_style,
-            'background-color': bg_color,  # Dodajemy kolor tła
+            'background-color': bg_color,
         }))
 
     total_pages = max((len(logs_data) - 1) // 25 + 1, 1)

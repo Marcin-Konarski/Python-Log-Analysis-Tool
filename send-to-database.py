@@ -37,14 +37,14 @@ df["date"] = pd.to_datetime(df["date"], errors="coerce")
 # Wstaw dane do MySQL
 for _, row in df.iterrows():
     cursor.execute("""
-        INSERT INTO logs (event_id, event_type, source, date, message)
-        VALUES (%s, %s, %s, %s, %s)
+    	INSERT IGNORE INTO logs (event_id, event_type, source, date, message)
+    	VALUES (%s, %s, %s, %s, %s)
     """, (
-        row["event_id"],
-        row["event_type"],
-        row["source"],
-        row["date"].strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(row["date"]) else None,
-        row["message"]
+    	row["event_id"],
+    	row["event_type"],
+    	row["source"],
+    	row["date"].strftime("%Y-%m-%d %H:%M:%S") if pd.notnull(row["date"]) else None,
+    	row["message"]
     ))
 
 conn.commit()
