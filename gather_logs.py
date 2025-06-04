@@ -300,32 +300,53 @@ class WindowsEventLogGatherer:
                 file.write(str(event_id) + " ")
                 
 def main():
+    """Main function for standalone execution"""
+    import yaml
+    
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    file_with_IP = "vm-ip.txt"
-    file_with_logs = "logs.csv"
-    hours = 10
-    log_types = [
-        "System", 
-        "Security", 
-        "Application", 
-        "Microsoft-Windows-Sysmon/Operational",
-        "Microsoft-Windows-Windows Defender/Operational"
-    ]
-    log_levels = [
-        "CRITICAL",
-        "ERROR",
-        "INFORMATION",
-        "WARNING",
-    ]
-    logs = WindowsEventLogGatherer(file_with_IP, log_types, log_levels)
-    logs.gather_events(hours)
-    logs.save_to_csv(file_with_logs)
+    # Load configuration
+    try:
+        with open("config.yml", 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        # Fallback to hardcoded values
+        config = {
+            'target_machine': {'hostname': '192.168.0.117'},
+            'log_collection': {
+                'hours_back': 10,
+                'log_types': ["System", "Security", "Application", "Microsoft-Windows-Sysmon/Operational", "Microsoft-Windows-Windows Defender/Operational"],
+                'log_levels': ["CRITICAL", "ERROR", "INFORMATION", "WARNING"]
+            },
+            'file_paths': {
+                'raw_logs': 'logs.csv',
+                'unique_events': 'events.txt'
+            }
+        }
 
-    logs.save_uniqe_event_ids_and_types_to_the_file("events.txt")
+    # Create temporary hostname file
+    import tempfile
+    temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+    temp_file.write(config['target_machine']['hostname'])
+    temp_file.close()
+
+    try:
+        logs = WindowsEventLogGatherer(
+            temp_file.name, 
+            config['log_collection']['log_types'],
+            config['log_collection']['log_levels']
+        )
+        logs.gather_events(config['log_collection']['hours_back'])
+        logs.save_to_csv(config['file_paths']['raw_logs'])
+        logs.save_uniqe_event_ids_and_types_to_the_file(config['file_paths']['unique_events'])
+    finally:
+        # Clean up temp file
+        import os
+        os.unlink(temp_file.name)
 
 if __name__ == "__main__":
     main()

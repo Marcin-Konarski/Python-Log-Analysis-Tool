@@ -196,19 +196,42 @@ class WindowsEventLogAnalyser:
             self.logger.error(f"Error saving results to JSON: {e}")
 
 def main():
+    """Main function for standalone execution"""
+    import yaml
+    
     logging.basicConfig(
-        level = logging.INFO,
+        level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
+    # Load configuration
+    try:
+        with open("config.yml", 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        
+        file_paths = config['file_paths']
+        reference_file = file_paths['reference_events']
+        logs_file = file_paths['raw_logs']
+        results_file = file_paths['analysis_results']
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        # Fallback to hardcoded values
+        reference_file = "event-classification.csv"
+        logs_file = "logs.csv"
+        results_file = "analysis_results.json"
+
     analyzer = WindowsEventLogAnalyser()
-    analyzer.load_reference_events_from_file("event-classification.csv")
-    analyzer.load_logs_from_csv("logs.csv")
+    
+    # Try to load reference events
+    try:
+        analyzer.load_reference_events_from_file(reference_file)
+    except FileNotFoundError:
+        print(f"Reference file {reference_file} not found, proceeding without it")
+    
+    analyzer.load_logs_from_csv(logs_file)
     analyzer.count_number_of_event_occurances()
     analyzer.analyze_events_based_on_event_id()
-
-    analyzer.save_to_json("analysis_results.json")
-
+    analyzer.save_to_json(results_file)
 
 if __name__ == "__main__":
     main()

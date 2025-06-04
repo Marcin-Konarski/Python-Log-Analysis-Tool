@@ -356,7 +356,7 @@ class LogProcessingOrchestrator:
                         break
                 
                 # Brief pause between steps
-                time.sleep(1)
+                time.sleep(2)
         
         finally:
             self.cleanup()

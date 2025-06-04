@@ -1,37 +1,28 @@
 import time
 import json
 import sys
+import yaml
 
 try:
-    import pandas as pd # type: ignore
-    import numpy as np # type: ignore
-    import dash # type: ignore
-    from dash import dcc, html, ctx # type: ignore
-    from dash.dependencies import Input, Output, State # type: ignore
+    import pandas as pd
+    import numpy as np
+    import dash
+    from dash import dcc, html, ctx
+    from dash.dependencies import Input, Output, State
 except ImportError:
     sys.exit("Error: This script requires following modules: pandas, numpy, dash and plotly. Please install with 'pip install pandas numpy dash plotly'")
 
-# import mysql.connector
+def load_config(config_file="config.yml"):
+    """Load configuration from YAML file"""
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    except Exception as e:
+        print(f"Error loading config: {e}")
+        return {}
 
-# def load_data_from_mysql():
-#     conn = mysql.connector.connect(
-#         host="192.168.0.118",
-#         port=3306,
-#         user="LU",
-#         password="1111",
-#         database="event_logs"
-#     )
-#     cursor = conn.cursor(dictionary=True)
-#     cursor.execute("SELECT event_id, event_type, source, date, message FROM logs")
-#     rows = cursor.fetchall()
-#     df = pd.DataFrame(rows)
-#     df['date'] = pd.to_datetime(df['date'], errors='coerce')
-#     return df
-
-# df = load_data_from_mysql()
-
-# Convert JSON to DataFrame for easier processing
 def json_to_dataframe(json_data):
+    """Convert JSON to DataFrame for easier processing"""
     events_data = []
     for event in json_data["events"]:
         specific_events = event.get("specific_events", [])
@@ -41,8 +32,8 @@ def json_to_dataframe(json_data):
                 events_data.append({
                     "event_id": specific_event.get("event_id", "Unknown"),
                     "occurrences": event.get("no_occurances", 0),
-                    "severity": specific_event.get("event_type", "Unknown"),  # Używamy event_type jako severity
-                    "description": "",  # Brak opisu w danych wejściowych
+                    "severity": specific_event.get("event_type", "Unknown"),
+                    "description": "",
                     "source": specific_event.get("source", "Unknown"),
                     "event_type": specific_event.get("event_type", "Unknown"),
                     "date": specific_event.get("date", "Unknown"),
@@ -51,16 +42,18 @@ def json_to_dataframe(json_data):
     
     return pd.DataFrame(events_data)
 
-
-# Load data
-import json
-import sys
-
 def load_json_data(json_path):
+    """Load data from JSON file"""
     with open(json_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-data = load_json_data("analysis_results.json")
+# Load configuration
+config = load_config()
+file_paths = config.get('file_paths', {})
+viz_config = config.get('visualization', {})
+
+# Load data
+data = load_json_data(file_paths.get('analysis_results', 'analysis_results.json'))
 df = json_to_dataframe(data)
 
 # Create Dash app
@@ -76,6 +69,7 @@ app = dash.Dash(
 sources = ['All'] + sorted([src for src in df['source'].unique() if src != 'Unknown' and src != 'All'])
 event_types = ['All'] + sorted([etype for etype in df['event_type'].unique() if etype != 'Unknown' and etype != 'All'])
 
+# Styles (keep the same)
 scrollable_container_style = {
     'height': '500px',
     'overflow-y': 'auto',
@@ -105,12 +99,12 @@ pagination_style = {
     'margin': '10px 0',
 }
 
+# Layout and callbacks remain the same...
 app.layout = html.Div([
     html.H3('Windows Event Log Viewer',
             style={'margin-bottom': '10px', 'color': '#333333', 'text-align': 'center', 'padding-top': '0px'}),
 
     html.Div([
-        #Source filter
         html.Div([
             html.Label('Source:', style={'font-weight': 'bold', **text_style}),
             dcc.Dropdown(
@@ -121,7 +115,6 @@ app.layout = html.Div([
             )
         ], style={'width': '200px', 'margin-right': '20px'}),
 
-        #Type filter
         html.Div([
             html.Label('Event Type:', style={'font-weight': 'bold', **text_style}),
             dcc.Dropdown(
@@ -132,13 +125,11 @@ app.layout = html.Div([
             )
         ], style={'width': '200px', 'margin-right': '20px'}),
         
-        #ID Search
         html.Div([
             html.Label('Event ID:', style={'font-weight': 'bold', **text_style}),
             dcc.Input(id='event_id_filter', type='text', placeholder='np. 4624', debounce=True)
         ], style={'margin-right': '20px'}),
         
-        # Date filter
         html.Div([
             html.Label('Date Range:', style={'font-weight': 'bold', **text_style}),
             dcc.DatePickerRange(
@@ -177,6 +168,7 @@ app.layout = html.Div([
     dcc.Store(id='page_store', data=0)
 ], style={'max-width': '1000px', 'margin': '0 auto', 'padding': '10px'})
 
+# Keep all the callback functions exactly the same...
 @app.callback(
     Output('filtered_logs_store', 'data'),
     Output('page_store', 'data'),
@@ -196,7 +188,6 @@ def update_logs_and_page(source, event_type, start_date, end_date, start_time, e
     ctx = dash.callback_context
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
 
-    # Jeśli zmieniono filtr
     if triggered_id in {'source_filter', 'type_filter', 'date_range', 'start_time', 'end_time', 'event_id_filter'}:
         filtered_df = df.copy()
 
@@ -219,11 +210,9 @@ def update_logs_and_page(source, event_type, start_date, end_date, start_time, e
         except Exception:
             pass
         
-
         filtered_df = filtered_df.sort_values(by='date', ascending=False)
         return filtered_df.to_dict('records'), 0
 
-    # Jeśli kliknięto przyciski stronicowania
     elif triggered_id in {'prev_page', 'next_page'} and stored_logs is not None:
         total_pages = max((len(stored_logs) - 1) // 25 + 1, 1)
 
@@ -234,7 +223,6 @@ def update_logs_and_page(source, event_type, start_date, end_date, start_time, e
         else:
             return stored_logs, current_page
 
-    # Pierwsze ładowanie - zwróć pełne dane
     if stored_logs is None:
         filtered_df = df.sort_values(by='date', ascending=False)
         return filtered_df.to_dict('records'), 0
@@ -259,18 +247,16 @@ def update_display(logs_data, page):
     current_date = None
     
     for log in page_logs:
-        # Pobierz typ eventu i ustaw odpowiedni kolor tła
         event_type = log.get('event_type', '')
         if 'ERROR' in event_type:
-            bg_color = '#FFAACF'  # jasny czerwony
+            bg_color = '#FFAACF'
         elif 'WARNING' in event_type:
-            bg_color = '#fff8e1'  # jasny żółty
+            bg_color = '#fff8e1'
         elif 'INFORMATION' in event_type or 'info' in event_type:
-            bg_color = '#e3f2fd'  # jasny niebieski
+            bg_color = '#e3f2fd'
         else:
-            bg_color = 'white'  # domyślny kolor
+            bg_color = 'white'
         
-        # Pobierz datę z loga i sformatuj tylko część daty (bez czasu)
         log_date = log.get('date', '')
         try:
             if isinstance(log_date, str):
@@ -281,7 +267,6 @@ def update_display(logs_data, page):
         except:
             display_date = 'Unknown date'
         
-        # Jeśli data się zmieniła, dodaj nagłówek z datą
         if display_date != current_date:
             log_elements.append(html.Div(
                 display_date,
@@ -331,6 +316,8 @@ def update_display(logs_data, page):
 
     return log_elements, page_text
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    host = viz_config.get('host', '127.0.0.1')
+    port = viz_config.get('port', 8050)
+    debug = viz_config.get('debug', True)
+    app.run(host=host, port=port, debug=debug)

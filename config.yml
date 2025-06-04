@@ -33,7 +33,7 @@ file_paths:
 database:
   host: "127.0.0.1"
   port: 3306
-  user: "root"
+  user: "LU"
   password: "1111"
   database: "event_logs"
   table: "logs"
