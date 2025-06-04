@@ -1,0 +1,60 @@
+# Windows Event Log Processing Configuration
+
+# Target machine configuration
+target_machine:
+  hostname: "192.168.0.117"  # IP address or hostname of the target machine
+
+# Log collection settings
+log_collection:
+  hours_back: 10  # How many hours back to collect logs
+  log_types:
+    - "System"
+    - "Security" 
+    - "Application"
+    - "Microsoft-Windows-Sysmon/Operational"
+    - "Microsoft-Windows-Windows Defender/Operational"
+  log_levels:
+    - "CRITICAL"
+    - "ERROR"
+    - "INFORMATION"
+    - "WARNING"
+
+# File paths
+file_paths:
+  # Input files
+  reference_events: "event-classification.csv"
+  
+  # Output files
+  raw_logs: "logs.csv"
+  analysis_results: "analysis_results.json"
+  unique_events: "events.txt"
+  
+# Database configuration
+database:
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "1111"
+  database: "event_logs"
+  table: "logs"
+
+# Processing options
+processing:
+  # Whether to save intermediate files
+  save_intermediate_files: true
+  
+  # Whether to clean up temporary files after processing
+  cleanup_temp_files: false
+  
+  # Logging level (DEBUG, INFO, WARNING, ERROR)
+  log_level: "INFO"
+
+# Visualization settings (for future web app launch)
+visualization:
+  # Whether to automatically launch the web visualization
+  auto_launch: true
+  
+  # Web server settings
+  host: "127.0.0.1"
+  port: 8050
+  debug: true
