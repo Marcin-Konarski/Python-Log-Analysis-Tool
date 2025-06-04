@@ -136,14 +136,7 @@ database:
 - Verify MySQL server is running
 - Check credentials in config.yml
 - Ensure database and user exist
-
-**pywin32 import errors**:
-- Install: `pip install pywin32`
-- Run: `python Scripts/pywin32_postinstall.py -install`
-
-### Logs
-
-Check `log_processing.log` for detailed execution logs and error messages.
+- You can also verify connectifity with test_db_connection.py file
 
 ## Security Considerations
 
