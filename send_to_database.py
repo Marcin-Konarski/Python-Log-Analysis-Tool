@@ -70,3 +70,19 @@ def send_data_to_database(config_db, json_file="analysis_results.json"):
     
     print(f"DEBUG: Successfully inserted {inserted_count} records")  # Debug print
     return inserted_count
+
+# Compatibility wrapper for backward compatibility
+if __name__ == "__main__":
+    legacy_config = {
+        "host": "192.168.57.130",
+        "port": 3306,
+        "user": "LU",
+        "password": "1111",
+        "database": "event_logs"
+    }
+    
+    try:
+        result = send_data_to_database(legacy_config, "analysis_results.json")
+        print(f"Successfully inserted {result} records")
+    except Exception as e:
+        print(f"Error: {e}")

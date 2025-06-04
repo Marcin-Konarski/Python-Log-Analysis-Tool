@@ -329,7 +329,6 @@ class LogProcessingOrchestrator:
     
     def run_pipeline(self) -> bool:
         """Run the complete log processing pipeline"""
-        print("here")
         start_time = time.time()
         self.logger.info("Starting Windows Event Log Processing Pipeline")
         self.logger.info(f"Configuration: {self.config_file}")
@@ -380,13 +379,11 @@ class LogProcessingOrchestrator:
 def main():
     """Main entry point"""
     config_file = "config.yml"
-    print("aaa")
     # Check if config file exists
     if not os.path.exists(config_file):
         print(f"Error: Configuration file '{config_file}' not found")
         print("Please create the configuration file before running the pipeline")
         sys.exit(1)
-    print(f"Config file: {config_file}")
 
     try:
         # Create and run orchestrator

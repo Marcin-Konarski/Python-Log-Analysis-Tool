@@ -41,10 +41,10 @@ database:
 # Processing options
 processing:
   # Whether to save intermediate files
-  save_intermediate_files: true
+  save_intermediate_files: false
   
   # Whether to clean up temporary files after processing
-  cleanup_temp_files: false
+  cleanup_temp_files: true
   
   # Logging level (DEBUG, INFO, WARNING, ERROR)
   log_level: "INFO"
